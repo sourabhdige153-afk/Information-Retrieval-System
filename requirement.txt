@@ -1,7 +1,11 @@
 python-dotenv
 google-generativeai
 langchain
-fastapi
+langchain_community
+langchain_huggingface
+langchain_text_splitters
 PyPDF2
+groq
+fastapi
+uvicorn
 faiss-cpu
-streamlit
