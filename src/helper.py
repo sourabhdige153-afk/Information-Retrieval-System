@@ -30,7 +30,7 @@ async def get_pdf_text(documents):
 
 def get_chunks(text):
     logging.info("Started Chunking...")
-    tex_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+    tex_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
     chunks = tex_splitter.split_text(text)
     return chunks
     
