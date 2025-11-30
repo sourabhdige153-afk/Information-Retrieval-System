@@ -22,7 +22,7 @@ async def upload_doc(documents: List[UploadFile] = File(...), Query: str = Form(
         print("Starting.....")
         text = await get_pdf_text(documents)
         if not text:
-            return ""
+            raise Exception("No text extracted from the PDF files.")
         
         text_chunks = get_chunks(text)
         
@@ -31,9 +31,9 @@ async def upload_doc(documents: List[UploadFile] = File(...), Query: str = Form(
         docs = vector_store.similarity_search(Query, k=5)
         
         retrieved_texts = ""
-        for page in docs:
+        for idx, page in enumerate(docs, 1):
             logging.info(f"page_content: {page.page_content}")
-            retrieved_texts += page.page_content+"\n"
+            retrieved_texts += f"--- Chunk {idx} ---\n{page.page_content}\n"
             
         answer = get_response_from_llm(retrieved_texts,Query)
         

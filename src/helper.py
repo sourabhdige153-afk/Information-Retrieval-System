@@ -32,47 +32,56 @@ def get_chunks(text):
     return chunks
     
 def generate_embeddings(chunks):
-    logging.info("Started embedding generation and saving into FAISS...")
-    embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-V2")
-    vector_store = FAISS.from_texts(chunks, embedding_model)
-    
-    # 2 approach
+    try:
+        logging.info("Generating embeddings using HuggingFaceEmbeddings and saving into FAISS...")
+        embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-V2")
+        vector_store = FAISS.from_texts(chunks, embedding_model)
+        
+        # 2 approach
 
-    # model = SentenceTransformer("all-MiniLM-L6-V2")
-    # vector_store = model.encode(chunks).astype("float32")
-    # docs = [Document(page_content=chunk) for chunk in chunks]
-    # vector_store = FAISS.from_texts(vector_store, docs)
-    
-    return vector_store
+        # model = SentenceTransformer("all-MiniLM-L6-V2")
+        # vector_store = model.encode(chunks).astype("float32")
+        # docs = [Document(page_content=chunk) for chunk in chunks]
+        # vector_store = FAISS.from_texts(vector_store, docs)
+        
+        return vector_store
+    except Exception as e:
+        logging.info(f"Exception in generate_embeddings: {e}")
+        raise e
     
 def get_response_from_llm(retrieved_texts,Query):
-    logging.info("Call llm to get answer from llm based on provided knowledge base document")
-    prompt = f"""
-        You are an assistant. Use ONLY the context below to answer the question,fo not anything extra info. if we don't have answer in context simply say i dont know.
+    try:
+        logging.info("Call llm to get answer from llm based on provided knowledge base document")
+        prompt = f"""
+            You are an assistant. Answer the following question using only the provided context.
+            If the answer is not in the context, say 'Not found in provided documents.'"
 
-        --- BEGIN CONTEXT ---
-        {retrieved_texts}
-        --- END CONTEXT ---
+            --- BEGIN CONTEXT ---
+            {retrieved_texts}
+            --- END CONTEXT ---
 
-        Question: {Query}
+            Question: {Query}
 
-        Answer:
-    """
-        
-    response = client.chat.completions.create(
-        model = "openai/gpt-oss-120b",
-        messages=[
-            {"role": "system", "content": "Answer based on context only."},
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=2048,
-        temperature=0.7,
-        top_p=1,
-        stream=False,
-        stop=None
-    )
+            Answer:
+        """
+            
+        response = client.chat.completions.create(
+            model = "openai/gpt-oss-120b",
+            messages=[
+                {"role": "system", "content": "Answer based on context only."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=2048,
+            temperature=0.7,
+            top_p=1,
+            stream=False,
+            stop=None
+        )
 
-    logging.info("response:"+response.choices[0].message.content)
-    answer = response.choices[0].message.content
+        logging.info("response:"+response.choices[0].message.content)
+        answer = response.choices[0].message.content
+    except Exception as e:
+        logging.info(f"Exception in get_response_from_llm: {e}")
+        raise e
         
     return answer
