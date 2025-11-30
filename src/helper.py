@@ -16,13 +16,16 @@ client = Groq(api_key = os.getenv("groq_api_key"))
 
 async def get_pdf_text(documents):
     logging.info("Started Pdf data extraction...")
-    text = ""
+    text = []
     for pdf in documents:
         contents = await pdf.read()
         pdf_reader = PdfReader(BytesIO(contents))
         for page in pdf_reader.pages:
-            text += page.extract_text()
+            page_text = page.extract_text()
+            if page_text:
+                text.append(page_text)
                 
+    text = "\n".join(text)        
     return text
 
 def get_chunks(text):
