@@ -1,4 +1,5 @@
 from fastapi import APIRouter, UploadFile, File, Form
+from fastapi.responses import JSONResponse 
 import logging
 from typing import List
 from src.helper import get_pdf_text, get_chunks, generate_embeddings, get_response_from_llm
@@ -36,7 +37,7 @@ async def upload_doc(documents: List[UploadFile] = File(...), Query: str = Form(
             
         answer = get_response_from_llm(retrieved_texts,Query)
         
-        return {f"Answer: {answer}"}
+        return JSONResponse(content={"answer": answer}, status_code=200)
     except Exception as e:
         logging.info(f"Exception: {e}")
-        return {f"Exception Occured:{e}"}
+        return JSONResponse(content={"error": f"Exception Occurred: {e}"}, status_code=500)
